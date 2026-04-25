@@ -154,7 +154,7 @@ This project demonstrates the transition from:
 
 ## 👤 Author
 
-**Shiv (Data Science Builder)**
+**selvasiva (Data Science Builder)**
 Passionate about building **AI-powered systems that solve real-world problems**.
 
 ---
