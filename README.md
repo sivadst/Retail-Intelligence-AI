@@ -1,20 +1,22 @@
-# ⚡ Retail Intelligence AI — Decision Engine
+# Retail Intelligence AI V2
 
-### 🚀 Live App
+A production-ready AI-powered retail analytics platform built with modern technologies.
 
-👉 https://retail-intelligence-ai-scgfryy8bq8hf5b48gacxe.streamlit.app/
+## 🎯 Overview
 
----
+Retail Intelligence AI V2 is a comprehensive platform for retail analytics, featuring:
 
-## 🧠 Overview
+- **Real-time Analytics**: Interactive dashboards with KPIs and charts
+- **AI Assistant**: Natural language queries against your retail data
+- **Demand Forecasting**: Prophet-based time-series forecasting
+- **Anomaly Detection**: Automatic detection of unusual patterns
+- **Smart Alerts**: Custom alert rules with real-time notifications
+- **Multi-tenant Architecture**: Support for multiple organizations
+- **Role-based Access Control**: Owner, Admin, Analyst, Viewer roles
 
-Retail Intelligence AI is a **production-grade decision engine** that transforms raw retail data into **actionable business insights, predictions, and strategic recommendations**.
+## 🏗️ Architecture
 
-Unlike traditional dashboards, this system doesn’t just visualize data — it **analyzes, predicts, and guides decisions**.
-
----
-
-## 🔥 Key Features
+### Tech Stack
 
 ### 📊 Data Intelligence
 
