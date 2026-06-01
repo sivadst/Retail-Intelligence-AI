@@ -114,9 +114,10 @@ class Alert(Base):
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     organization_id = Column(String(36), ForeignKey("organizations.id"), nullable=False)
+    dataset_id = Column(String(36), ForeignKey("datasets.id"), nullable=False)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    condition = Column(Text, nullable=False)  # JSON: {metric, operator, threshold}
+    condition = Column(JSON, nullable=False)  # {type, metric, operator, threshold}
     enabled = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
