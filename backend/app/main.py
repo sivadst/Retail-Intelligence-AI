@@ -7,7 +7,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import settings
-from app.routers import auth, datasets, ai_assistant
+from app.routers import auth, datasets, ai_assistant, analytics, forecasting, alerts
 from app.core import UnauthorizedException, ForbiddenException, NotFoundException
 from app.database import Base, engine
 
@@ -102,6 +102,9 @@ def create_app() -> FastAPI:
     app.include_router(auth.router)
     app.include_router(datasets.router)
     app.include_router(ai_assistant.router)
+    app.include_router(analytics.router)
+    app.include_router(forecasting.router)
+    app.include_router(alerts.router)
 
     logger.info("FastAPI application created successfully")
     return app
