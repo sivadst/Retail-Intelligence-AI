@@ -25,7 +25,7 @@ export default function AIAssistantPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: suggestedQuestions } = useQuery({
-    queryKey: ['suggested-questions', selectedDatasetId],
+    queryKey: ["suggested-questions", selectedDatasetId],
     queryFn: async () => {
       if (!selectedDatasetId) return [];
       const res = await api.get(`/api/v1/ai/suggested-questions?dataset_id=${selectedDatasetId}`);
@@ -36,7 +36,7 @@ export default function AIAssistantPage() {
 
   const chatMutation = useMutation({
     mutationFn: async (message: string) => {
-      const res = await api.post('/api/v1/ai/chat', {
+      const res = await api.post("/api/v1/ai/chat", {
         message,
         dataset_id: selectedDatasetId,
       });
@@ -55,13 +55,21 @@ export default function AIAssistantPage() {
       const assistantMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: data.message,
-        sqlQuery: data.sql_query,
-        chartData: data.results,
-        chartType: data.chart_type,
-        chartTitle: data.chart_title,
+        content: data?.message || "No response received.",
+        sqlQuery: data?.sql_query,
+        chartData: data?.results,
+        chartType: data?.chart_type,
+        chartTitle: data?.chart_title,
       };
       setMessages((prev) => [...prev, assistantMsg]);
+    },
+    onError: () => {
+      const errorMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "Sorry, I encountered an error processing your request. Please try again.",
+      };
+      setMessages((prev) => [...prev, errorMsg]);
     },
   });
 
@@ -78,12 +86,12 @@ export default function AIAssistantPage() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, chatMutation.isPending]);
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col">
       {/* Header */}
-      <div className="border-b border-slate-200 bg-white px-6 py-4 flex items-center justify-between">
+      <div className="border-b border-slate-200 bg-white px-6 py-4 flex items-center justify-between flex-shrink-0">
         <div>
           <h1 className="text-xl font-bold text-slate-900">AI Analytics Assistant</h1>
           <p className="text-sm text-slate-500">Ask questions about your data in natural language</p>
@@ -107,7 +115,7 @@ export default function AIAssistantPage() {
               <div className="text-center py-12">
                 <Bot className="w-12 h-12 text-blue-200 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                  Hi! I'm your Retail AI Assistant
+                  Hi! I&apos;m your Retail AI Assistant
                 </h3>
                 <p className="text-slate-500 mb-6 max-w-md mx-auto">
                   Ask me anything about your retail data. I can analyze trends, find insights, 
@@ -156,17 +164,17 @@ export default function AIAssistantPage() {
                     <p>{msg.content}</p>
                   )}
 
-                  {/* Chart/Data Table */}
+                  {/* Data Table */}
                   {msg.chartData && msg.chartData.length > 0 && msg.role === "assistant" && (
                     <div className="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
                       <div className="flex items-center gap-2 mb-2">
-                        {msg.chartType === 'table' ? (
+                        {msg.chartType === "table" ? (
                           <Table className="w-4 h-4 text-slate-500" />
                         ) : (
                           <BarChart3 className="w-4 h-4 text-slate-500" />
                         )}
                         <span className="text-xs font-medium text-slate-500 uppercase">
-                          {msg.chartType || 'Data'}
+                          {msg.chartType || "Data"}
                         </span>
                       </div>
                       <div className="overflow-x-auto">
@@ -185,7 +193,7 @@ export default function AIAssistantPage() {
                               <tr key={i} className="border-b border-slate-100">
                                 {Object.values(row).map((val: any, j: number) => (
                                   <td key={j} className="py-2 px-3 text-slate-600">
-                                    {typeof val === 'number' ? val.toLocaleString() : String(val)}
+                                    {typeof val === "number" ? val.toLocaleString() : String(val)}
                                   </td>
                                 ))}
                               </tr>
@@ -196,10 +204,10 @@ export default function AIAssistantPage() {
                     </div>
                   )}
 
-                  {/* SQL Query (collapsible) */}
+                  {/* SQL Query */}
                   {msg.sqlQuery && msg.role === "assistant" && (
                     <details className="mt-3">
-                      <summary className="text-xs text-slate-500 cursor-pointer flex items-center gap-1">
+                      <summary className="text-xs text-slate-500 cursor-pointer flex items-center gap-1 select-none">
                         <Code className="w-3 h-3" /> SQL Query
                       </summary>
                       <pre className="mt-2 p-3 bg-slate-900 text-slate-300 rounded-lg text-xs overflow-x-auto">
@@ -235,7 +243,7 @@ export default function AIAssistantPage() {
           </div>
 
           {/* Input */}
-          <div className="border-t border-slate-200 bg-white px-6 py-4">
+          <div className="border-t border-slate-200 bg-white px-6 py-4 flex-shrink-0">
             <form onSubmit={handleSubmit} className="flex gap-3">
               <input
                 type="text"

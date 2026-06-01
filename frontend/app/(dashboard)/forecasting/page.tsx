@@ -7,8 +7,16 @@ import { useAppStore } from "@/stores/app";
 import DatasetSelector from "@/components/shared/DatasetSelector";
 import { CardSkeleton } from "@/components/shared/LoadingSkeleton";
 import EmptyState from "@/components/shared/EmptyState";
-import { TrendingUp, Calendar, BarChart3, Loader2, Download } from "lucide-react";
+import { TrendingUp, BarChart3, Loader2, Download } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+
+interface ForecastPoint {
+  ds: string;
+  y?: number;
+  yhat?: number;
+  yhat_lower?: number;
+  yhat_upper?: number;
+}
 
 export default function ForecastingPage() {
   const { selectedDatasetId } = useAppStore();
@@ -18,7 +26,7 @@ export default function ForecastingPage() {
 
   const forecastMutation = useMutation({
     mutationFn: async () => {
-      const res = await api.post('/api/v1/forecasting/forecast', {
+      const res = await api.post("/api/v1/forecasting/forecast", {
         dataset_id: selectedDatasetId,
         metric,
         granularity,
@@ -29,6 +37,9 @@ export default function ForecastingPage() {
   });
 
   const forecast = forecastMutation.data;
+  const chartData: ForecastPoint[] = forecast 
+    ? [...(forecast.historical || []), ...(forecast.forecast || [])]
+    : [];
 
   return (
     <div className="p-6 space-y-6">
@@ -45,7 +56,6 @@ export default function ForecastingPage() {
       {/* Controls */}
       <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Metric */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Metric</label>
             <div className="flex bg-slate-100 rounded-lg p-1">
@@ -54,7 +64,7 @@ export default function ForecastingPage() {
                   key={m}
                   onClick={() => setMetric(m)}
                   className={`flex-1 py-2 text-sm font-medium rounded-md capitalize transition-colors ${
-                    metric === m ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                    metric === m ? "bg-white text-blue-600 shadow-sm" : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   {m}
@@ -63,7 +73,6 @@ export default function ForecastingPage() {
             </div>
           </div>
 
-          {/* Granularity */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Granularity</label>
             <div className="flex bg-slate-100 rounded-lg p-1">
@@ -72,7 +81,7 @@ export default function ForecastingPage() {
                   key={g}
                   onClick={() => setGranularity(g)}
                   className={`flex-1 py-2 text-sm font-medium rounded-md capitalize transition-colors ${
-                    granularity === g ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                    granularity === g ? "bg-white text-blue-600 shadow-sm" : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   {g}
@@ -81,10 +90,9 @@ export default function ForecastingPage() {
             </div>
           </div>
 
-          {/* Horizon */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Forecast Horizon: <span className="text-blue-600">{horizon} days</span>
+              Horizon: <span className="text-blue-600">{horizon} days</span>
             </label>
             <input
               type="range"
@@ -102,7 +110,6 @@ export default function ForecastingPage() {
             </div>
           </div>
 
-          {/* Generate Button */}
           <div className="flex items-end">
             <button
               onClick={() => forecastMutation.mutate()}
@@ -125,7 +132,6 @@ export default function ForecastingPage() {
         </div>
       </div>
 
-      {/* Results */}
       {forecastMutation.isPending && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <CardSkeleton />
@@ -134,9 +140,14 @@ export default function ForecastingPage() {
         </div>
       )}
 
+      {forecastMutation.error && (
+        <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-sm">
+          Failed to generate forecast. Ensure your dataset has enough historical data (60+ days).
+        </div>
+      )}
+
       {forecast && (
         <>
-          {/* Metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
               <div className="text-sm text-slate-500 mb-1">Predicted Total</div>
@@ -146,8 +157,8 @@ export default function ForecastingPage() {
             </div>
             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
               <div className="text-sm text-slate-500 mb-1">Trend Direction</div>
-              <div className={`text-2xl font-bold ${forecast.metrics?.trend_direction === 'upward' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                {forecast.metrics?.trend_direction === 'upward' ? '↗ Upward' : '↘ Downward'}
+              <div className={`text-2xl font-bold ${forecast.metrics?.trend_direction === "upward" ? "text-emerald-600" : "text-rose-600"}`}>
+                {forecast.metrics?.trend_direction === "upward" ? "↗ Upward" : "↘ Downward"}
               </div>
             </div>
             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
@@ -164,7 +175,6 @@ export default function ForecastingPage() {
             </div>
           </div>
 
-          {/* Forecast Chart */}
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
@@ -176,7 +186,7 @@ export default function ForecastingPage() {
               </button>
             </div>
             <ResponsiveContainer width="100%" height={400}>
-              <AreaChart data={[...forecast.historical, ...forecast.forecast]} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+              <AreaChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                 <defs>
                   <linearGradient id="forecastGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#2563eb" stopOpacity={0.2} />
@@ -186,13 +196,13 @@ export default function ForecastingPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis 
                   dataKey="ds" 
-                  tickFormatter={(v) => new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  tickFormatter={(v) => new Date(v).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                 />
                 <YAxis tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
                 <Tooltip 
                   labelFormatter={(v) => new Date(v).toLocaleDateString()}
                   formatter={(value: number, name: string) => [
-                    name === 'y' ? `Actual: $${value.toLocaleString()}` : `Forecast: $${value.toLocaleString()}`,
+                    name === "y" ? `Actual: $${value.toLocaleString()}` : `Forecast: $${value.toLocaleString()}`,
                     ""
                   ]}
                 />

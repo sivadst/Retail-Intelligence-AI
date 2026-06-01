@@ -5,13 +5,13 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useAppStore } from "@/stores/app";
 import DatasetSelector from "@/components/shared/DatasetSelector";
-import { Bell, Plus, Trash2, Play, AlertTriangle, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Bell, Plus, Trash2, Play, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
 
 interface Alert {
   id: string;
   name: string;
   condition_type: string;
-  condition_config: any;
+  condition_config: Record<string, any>;
   is_active: boolean;
   last_triggered_at: string | null;
 }
@@ -22,17 +22,17 @@ export default function AlertsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const { data: alerts, refetch } = useQuery({
-    queryKey: ['alerts'],
+    queryKey: ["alerts"],
     queryFn: async () => {
-      const res = await api.get('/api/v1/alerts');
+      const res = await api.get("/api/v1/alerts");
       return res.data?.data || [];
     },
   });
 
   const { data: history } = useQuery({
-    queryKey: ['alert-history'],
+    queryKey: ["alert-history"],
     queryFn: async () => {
-      const res = await api.get('/api/v1/alerts/history');
+      const res = await api.get("/api/v1/alerts/history");
       return res.data?.data || [];
     },
   });
@@ -43,7 +43,7 @@ export default function AlertsPage() {
   });
 
   const toggleMutation = useMutation({
-    mutationFn: ({ id, active }: { id: string; active: boolean }) => 
+    mutationFn: ({ id, active }: { id: string; active: boolean }) =>
       api.put(`/api/v1/alerts/${id}`, { is_active: active }),
     onSuccess: () => refetch(),
   });
@@ -72,7 +72,6 @@ export default function AlertsPage() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="border-b border-slate-200">
         <div className="flex gap-6">
           {(["active", "history"] as const).map((tab) => (
@@ -81,24 +80,23 @@ export default function AlertsPage() {
               onClick={() => setActiveTab(tab)}
               className={`pb-3 text-sm font-medium capitalize border-b-2 transition-colors ${
                 activeTab === tab
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-slate-500 hover:text-slate-700'
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-slate-500 hover:text-slate-700"
               }`}
             >
-              {tab} {tab === 'active' ? `(${alerts?.length || 0})` : `(${history?.length || 0})`}
+              {tab} {tab === "active" ? `(${alerts?.length || 0})` : `(${history?.length || 0})`}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Active Alerts */}
       {activeTab === "active" && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {alerts?.map((alert: Alert) => (
             <div key={alert.id} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Bell className={`w-5 h-5 ${alert.is_active ? 'text-blue-600' : 'text-slate-400'}`} />
+                  <Bell className={`w-5 h-5 ${alert.is_active ? "text-blue-600" : "text-slate-400"}`} />
                   <h3 className="font-semibold text-slate-900">{alert.name}</h3>
                 </div>
                 <div className="flex items-center gap-1">
@@ -117,11 +115,13 @@ export default function AlertsPage() {
                   </button>
                 </div>
               </div>
-              
+
               <p className="text-sm text-slate-500 mb-3">
-                {alert.condition_type === 'threshold' && `When ${alert.condition_config.metric} ${alert.condition_config.operator} ${alert.condition_config.value}`}
-                {alert.condition_type === 'percent_change' && `When ${alert.condition_config.metric} changes ${alert.condition_config.threshold}% vs ${alert.condition_config.period}`}
-                {alert.condition_type === 'anomaly' && 'Automatic anomaly detection'}
+                {alert.condition_type === "threshold" &&
+                  `When ${alert.condition_config.metric} ${alert.condition_config.operator} ${alert.condition_config.value}`}
+                {alert.condition_type === "percent_change" &&
+                  `When ${alert.condition_config.metric} changes ${alert.condition_config.threshold}% vs ${alert.condition_config.period}`}
+                {alert.condition_type === "anomaly" && "Automatic anomaly detection"}
               </p>
 
               <div className="flex items-center justify-between">
@@ -132,7 +132,7 @@ export default function AlertsPage() {
                     onChange={(e) => toggleMutation.mutate({ id: alert.id, active: e.target.checked })}
                     className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
                   />
-                  <span className="text-sm text-slate-600">{alert.is_active ? 'Active' : 'Inactive'}</span>
+                  <span className="text-sm text-slate-600">{alert.is_active ? "Active" : "Inactive"}</span>
                 </label>
                 {alert.last_triggered_at && (
                   <span className="text-xs text-slate-400">
@@ -145,7 +145,6 @@ export default function AlertsPage() {
         </div>
       )}
 
-      {/* History */}
       {activeTab === "history" && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <table className="min-w-full">
@@ -161,7 +160,7 @@ export default function AlertsPage() {
             <tbody>
               {history?.map((item: any) => (
                 <tr key={item.id} className="border-t border-slate-100">
-                  <td className="py-3 px-4 text-sm text-slate-900">{item.alert?.name || 'Unknown'}</td>
+                  <td className="py-3 px-4 text-sm text-slate-900">{item.alert?.name || "Unknown"}</td>
                   <td className="py-3 px-4 text-sm text-slate-600 font-mono">{JSON.stringify(item.triggered_value)}</td>
                   <td className="py-3 px-4 text-sm text-slate-600">{item.message}</td>
                   <td className="py-3 px-4 text-sm text-slate-500">{new Date(item.created_at).toLocaleString()}</td>
